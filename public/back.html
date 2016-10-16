@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Drive Connector Auth</title>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<body>
+Hello :)
+</body>
+
+<script>
+    var codeIdx = location.href.lastIndexOf('code=');
+    var code = location.href.substr(codeIdx + 5).replace('#', '');
+
+    $.get( "google/token?code=" + code, function( data ) {
+        window.opener.postMessage(data, '*');
+    });
+</script>
+</html>

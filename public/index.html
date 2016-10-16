@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Google Drive Connector</title>
+</head>
+<style>
+    table#list_content > thead > tr {
+        background: #d8d8d8;
+        border-bottom: 1px solid #bababa;
+    }
+
+    #show_more {
+        padding: 6px;
+        background: #d8d8d8;
+    }
+
+    #show_more:hover {
+        background: #e9e9e9;
+        cursor: pointer;
+    }
+
+    #show_more:active {
+        background: #bababa;
+    }
+
+    table#list_content > tbody > tr:nth-child(2n+1) {
+        background: #e9e9e9;
+    }
+
+    table#list_content > tbody > tr.loading {
+        background: #e9e9e9;
+        text-align: center;
+        padding: 6px;
+    }
+
+    table#list_content > tbody > tr:hover {
+        background: #d8d8d8;
+        cursor: pointer;
+    }
+
+    table#list_content > tbody > tr > td, table#list_content > thead > tr > th {
+        padding: 6px;
+    }
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        'use strict';
+
+        var popup = null,
+                files = null,
+                tokenData = null,
+                list_content = $('#list_content');
+
+        $.get("google/auth", function (data) {
+            var w = 450;
+            var h = 450;
+            var l = (screen.width / 2) - (w / 2);
+            var t = (screen.height / 2) - (h / 2);
+            var params = 'toolbar=no,location=no,directories=no,' +
+                    'status=no,menubar=no,scrollbars=no,resizable=no,' +
+                    'copyhistory=no,height=' + h + ',width=' + w + ',left=' + l + ',top=' + t;
+            popup = window.open(data, "_blank", params);
+        });
+
+        window.onmessage = function (e) {
+            popup.close();
+            tokenData = e.data;
+            files = new Files(list_content);
+            files.load();
+
+        };
+
+        function Files(container) {
+            var self = this;
+            this.container = container;
+            this.nextPageToken = null;
+            this.files = [];
+            this.show_more = $('<div id="show_more" align="center" style="display: none">Show More</div>');
+            this.container.after(this.show_more);
+            this.loading = $('<tr class="loading"><td colspan="5">loading...</td></tr>');
+            this.show_more.click(function () {
+                self.load();
+            });
+        }
+
+        Files.prototype.load = function () {
+            var self = this, params = {}, loading;
+            if (self.nextPageToken) {
+                params.nextPageToken = self.nextPageToken;
+            }
+
+            this.container.append(this.loading);
+            this.container.show();
+
+            self.show_more.hide();
+
+            $.get("google/list", params, function (data) {
+                console.log(data);
+                self.loading.detach();
+                self.files = data.files;
+                self.nextPageToken = data.nextPageToken;
+                if (self.nextPageToken) {
+                    self.show_more.show();
+                }
+                self._render();
+            });
+        };
+        Files.prototype._render = function () {
+            var self = this;
+            this.files.forEach(function (file) {
+                self._renderFile(file);
+            });
+
+        };
+        Files.prototype._renderFile = function (file) {
+            var tr = $('<tr></tr>');
+            tr.click(function () {
+                /*if (file.mimeType === 'text/plain') {
+                    window.open('google/txt/' + file.id);
+                } else {*/
+                    window.open(file.webContentLink);
+               // }
+            });
+            tr.append('<td>' + file.path + '</td>');
+            tr.append('<td>' + file.name + '</td>');
+            tr.append('<td>' + file.mimeType + '</td>');
+            tr.append('<td>' + file.createdTime + '</td>');
+            tr.append('<td>' + file.modifiedTime + '</td>');
+
+            this.container.find('tbody').append(tr);
+        };
+    });
+</script>
+
+<body>
+<table id="list_content" style="display:none" width="100%" cellspacing="0" cellpadding="0">
+    <thead>
+    <tr>
+        <th width="34%">Path</th>
+        <th width="24%">File Name</th>
+        <th width="18%">Mime Type</th>
+        <th width="16%">Date Created</th>
+        <th width="16%">Date Modified</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+</body>
+</html>

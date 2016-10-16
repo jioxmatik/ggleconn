@@ -1,0 +1,28 @@
+{
+  "name": "google.connector",
+  "version": "0.0.1",
+  "description": "Dev Task Connector to google drive",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "npm run compile && npm run serve",
+    "compile": "tsc",
+    "serve": "node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "typings install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jioxmatik/ggleconn.git"
+  },
+  "author": "Andrey Dubinin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jioxmatik/ggleconn/issues"
+  },
+  "homepage": "https://github.com/jioxmatik/ggleconn#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "fs": "0.0.1-security",
+    "googleapis": "^14.0.0"
+  }
+}
